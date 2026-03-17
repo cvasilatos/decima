@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import cast
 
 from decima import CustomLogger, JsonFormatter, LogFormatter
+from decima.logger import blue, bold_red, cyan, gray, red, reset, yellow
 
 
 class TestLogFormatter:
@@ -25,7 +26,7 @@ class TestLogFormatter:
             exc_info=None,
         )
         result = formatter.format(record)
-        assert LogFormatter.blue in result
+        assert blue in result
         assert "debug msg" in result
 
     def test_format_info_contains_gray(self) -> None:
@@ -41,7 +42,7 @@ class TestLogFormatter:
             exc_info=None,
         )
         result = formatter.format(record)
-        assert LogFormatter.gray in result
+        assert gray in result
         assert "info msg" in result
 
     def test_format_warning_contains_yellow(self) -> None:
@@ -57,7 +58,7 @@ class TestLogFormatter:
             exc_info=None,
         )
         result = formatter.format(record)
-        assert LogFormatter.yellow in result
+        assert yellow in result
 
     def test_format_error_contains_red(self) -> None:
         """ERROR level records use red color code."""
@@ -72,7 +73,7 @@ class TestLogFormatter:
             exc_info=None,
         )
         result = formatter.format(record)
-        assert LogFormatter.red in result
+        assert red in result
 
     def test_format_critical_contains_bold_red(self) -> None:
         """CRITICAL level records use bold red color code."""
@@ -87,7 +88,7 @@ class TestLogFormatter:
             exc_info=None,
         )
         result = formatter.format(record)
-        assert LogFormatter.bold_red in result
+        assert bold_red in result
 
     def test_format_trace_contains_cyan(self) -> None:
         """TRACE level (5) records use cyan color code."""
@@ -102,7 +103,7 @@ class TestLogFormatter:
             exc_info=None,
         )
         result = formatter.format(record)
-        assert LogFormatter.cyan in result
+        assert cyan in result
 
     def test_format_truncates_long_name(self) -> None:
         """Names longer than 25 characters are truncated, keeping only the last 25 characters."""
@@ -150,7 +151,7 @@ class TestLogFormatter:
             exc_info=None,
         )
         result = formatter.format(record)
-        assert LogFormatter.reset in result
+        assert reset in result
 
 
 class TestJsonFormatter:

@@ -5,21 +5,22 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, ClassVar, TextIO
 
+cyan: str = "\x1b[36m"
+blue: str = "\x1b[34m"
+gray: str = "\x1b[37m"
+yellow: str = "\x1b[33m"
+red: str = "\x1b[31m"
+green: str = "\x1b[32m"
+bold_red: str = "\x1b[31;1m"
+
+reset: str = "\x1b[0m"
+
+bold: str = "\033[1m"
+reset_bold: str = "\033[0m"
+
 
 class LogFormatter(logging.Formatter):
     """Log formatter that adds colors based on log levels."""
-
-    cyan: str = "\x1b[36m"
-    blue: str = "\x1b[34m"
-    gray: str = "\x1b[37m"
-    yellow: str = "\x1b[33m"
-    red: str = "\x1b[31m"
-    bold_red: str = "\x1b[31;1m"
-
-    reset: str = "\x1b[0m"
-
-    bold: str = "\033[1m"
-    reset_bold: str = "\033[0m"
 
     def __init__(self, class_length: int) -> None:
         """Initialize the LogFormatter with a specified class name length for formatting.
@@ -35,7 +36,7 @@ class LogFormatter(logging.Formatter):
         super().__init__()
         self.class_length: int = class_length
 
-        self._fmt_str = f"%(asctime)s - [%(levelname)8s] - {self.bold}%(name){self.class_length}s{self.reset_bold} - %(message)s"
+        self._fmt_str = f"%(asctime)s - [%(levelname)8s] - {bold}%(name){self.class_length}s{reset_bold} - %(message)s"
 
     def format(self, record: logging.LogRecord) -> str:
         """Override the format method to apply color formatting based on log levels and truncate logger names if they exceed the specified class length."""
@@ -44,21 +45,15 @@ class LogFormatter(logging.Formatter):
 
         original_msg = record.getMessage()
         if "[" in original_msg and "]" in original_msg:
-            colored_brackets = re.sub(
-                r"\[(.*?)\]",
-                f"[{self.cyan}\\1{self.reset}]",
-                original_msg,
-            )
-            # Temporarily overwrite message for the formatter
-            record.msg = colored_brackets
-            record.args = ()  # Clear args since getMessage() already evaluated them
+            record.msg: str = re.sub(r"\[(.*?)\]", f"[{cyan}\\1{reset}]", original_msg)
+            record.args = ()
         formats = {
-            5: f"{self.cyan}{self._fmt_str}{self.reset}",
-            logging.DEBUG: f"{self.blue}{self._fmt_str}{self.reset}",
-            logging.INFO: f"{self.gray}{self._fmt_str}{self.reset}",
-            logging.WARNING: f"{self.yellow}{self._fmt_str}{self.reset}",
-            logging.ERROR: f"{self.red}{self._fmt_str}{self.reset}",
-            logging.CRITICAL: f"{self.bold_red}{self._fmt_str}{self.reset}",
+            5: f"{cyan}{self._fmt_str}{reset}",
+            logging.DEBUG: f"{blue}{self._fmt_str}{reset}",
+            logging.INFO: f"{gray}{self._fmt_str}{reset}",
+            logging.WARNING: f"{yellow}{self._fmt_str}{reset}",
+            logging.ERROR: f"{red}{self._fmt_str}{reset}",
+            logging.CRITICAL: f"{bold_red}{self._fmt_str}{reset}",
         }
         log_fmt = formats.get(record.levelno, self._fmt_str)
 
