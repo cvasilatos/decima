@@ -45,7 +45,7 @@ class LogFormatter(logging.Formatter):
 
         original_msg: str = record.getMessage()
         if "[" in original_msg and original_msg.index("[") == 0 and "]" in original_msg:
-            record.msg: str = re.sub(r"\[(.*?)\]", f"[{cyan}\\1{reset}]", original_msg)
+            record.msg: str = re.sub(r"\[(.*?)\]", f"[{cyan}\\1{reset}]", original_msg, count=1)
             record.args = ()
         formats = {
             5: f"{cyan}{self._fmt_str}{reset}",
