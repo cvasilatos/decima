@@ -9,19 +9,17 @@ from typing import Any, ClassVar, TextIO
 class LogFormatter(logging.Formatter):
     """Log formatter that adds colors based on log levels."""
 
-    cyan, blue, gray, yellow, red, bold_red = (
-        "\x1b[36m",
-        "\x1b[34m",
-        "\x1b[37m",
-        "\x1b[33m",
-        "\x1b[31m",
-        "\x1b[31;1m",
-    )
+    cyan: str = "\x1b[36m"
+    blue: str = "\x1b[34m"
+    gray: str = "\x1b[37m"
+    yellow: str = "\x1b[33m"
+    red: str = "\x1b[31m"
+    bold_red: str = "\x1b[31;1m"
 
-    reset = "\x1b[0m"
+    reset: str = "\x1b[0m"
 
-    bold = "\033[1m"
-    reset_bold = "\033[0m"
+    bold: str = "\033[1m"
+    reset_bold: str = "\033[0m"
 
     def __init__(self, class_length: int) -> None:
         """Initialize the LogFormatter with a specified class name length for formatting.
