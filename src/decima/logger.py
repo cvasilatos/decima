@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 from datetime import datetime
 from pathlib import Path
 from typing import Any, ClassVar, TextIO
@@ -7,6 +8,20 @@ from typing import Any, ClassVar, TextIO
 
 class LogFormatter(logging.Formatter):
     """Log formatter that adds colors based on log levels."""
+
+    cyan, blue, gray, yellow, red, bold_red = (
+        "\x1b[36m",
+        "\x1b[34m",
+        "\x1b[37m",
+        "\x1b[33m",
+        "\x1b[31m",
+        "\x1b[31;1m",
+    )
+
+    reset = "\x1b[0m"
+
+    bold = "\033[1m"
+    reset_bold = "\033[0m"
 
     def __init__(self, class_length: int) -> None:
         """Initialize the LogFormatter with a specified class name length for formatting.
@@ -22,37 +37,39 @@ class LogFormatter(logging.Formatter):
         super().__init__()
         self.class_length: int = class_length
 
-    cyan, blue, gray, yellow, red, bold_red = (
-        "\x1b[36m",
-        "\x1b[34m",
-        "\x1b[37m",
-        "\x1b[33m",
-        "\x1b[31m",
-        "\x1b[31;1m",
-    )
-    reset = "\x1b[0m"
-
-    bold = "\033[1m"
-    reset_bold = "\033[0m"
-
-    fmt_str = f"%(asctime)s - [%(levelname)s] - {bold}%(name)s{reset_bold} - %(message)s"
+        self._fmt_str = f"%(asctime)s - [%(levelname)8s] - {self.bold}%(name){self.class_length}s{self.reset_bold} - %(message)s"
 
     def format(self, record: logging.LogRecord) -> str:
         """Override the format method to apply color formatting based on log levels and truncate logger names if they exceed the specified class length."""
         if len(record.name) > self.class_length:
             record.name = record.name[-self.class_length :]
 
+        original_msg = record.getMessage()
+        if "[" in original_msg and "]" in original_msg:
+            colored_brackets = re.sub(
+                r"\[(.*?)\]",
+                f"[{self.cyan}\\1{self.reset}]",
+                original_msg,
+            )
+            # Temporarily overwrite message for the formatter
+            record.msg = colored_brackets
+            record.args = ()  # Clear args since getMessage() already evaluated them
         formats = {
-            5: f"{self.cyan}{self.fmt_str}{self.reset}",
-            logging.DEBUG: f"{self.blue}{self.fmt_str}{self.reset}",
-            logging.INFO: f"{self.gray}{self.fmt_str}{self.reset}",
-            logging.WARNING: f"{self.yellow}{self.fmt_str}{self.reset}",
-            logging.ERROR: f"{self.red}{self.fmt_str}{self.reset}",
-            logging.CRITICAL: f"{self.bold_red}{self.fmt_str}{self.reset}",
+            5: f"{self.cyan}{self._fmt_str}{self.reset}",
+            logging.DEBUG: f"{self.blue}{self._fmt_str}{self.reset}",
+            logging.INFO: f"{self.gray}{self._fmt_str}{self.reset}",
+            logging.WARNING: f"{self.yellow}{self._fmt_str}{self.reset}",
+            logging.ERROR: f"{self.red}{self._fmt_str}{self.reset}",
+            logging.CRITICAL: f"{self.bold_red}{self._fmt_str}{self.reset}",
         }
-        log_fmt = formats.get(record.levelno, self.fmt_str)
+        log_fmt = formats.get(record.levelno, self._fmt_str)
 
         return logging.Formatter(log_fmt).format(record)
+
+    @property
+    def fmt_str(self) -> str:
+        """Return the base log format string without color codes, which includes the timestamp, log level, logger name (formatted with bold), and the log message."""
+        return self._fmt_str
 
 
 class JsonFormatter(logging.Formatter):
@@ -97,8 +114,10 @@ class CustomLogger(logging.Logger):
         Description:
             - This method configures the logging system to use a custom logger class (CustomLogger) and sets up two handlers: a console handler that formats logs with colors based
             on log levels, and
+
         """
         logging.setLoggerClass(CustomLogger)
+        log_formatter = LogFormatter(class_length)
 
         root: logging.Logger = logging.getLogger()
         for handler in root.handlers[:]:
@@ -108,10 +127,10 @@ class CustomLogger(logging.Logger):
         log_dir.mkdir(parents=True, exist_ok=True)
         date_time: str = datetime.now(tz=datetime.now().astimezone().tzinfo).strftime("%Y%m%d-%H%M%S")
         file_handler = logging.FileHandler(log_dir / f"{filename}-{date_time}.log", mode="w")
-        file_handler.setFormatter(logging.Formatter(LogFormatter.fmt_str))
+        file_handler.setFormatter(logging.Formatter(log_formatter.fmt_str))
 
         console_handler: logging.StreamHandler[TextIO] = logging.StreamHandler()
-        console_handler.setFormatter(LogFormatter(class_length))
+        console_handler.setFormatter(log_formatter)
 
         log_path: Path = Path(folder) / f"{filename}.jsonl"
         file_h = logging.FileHandler(log_path, mode="a")
