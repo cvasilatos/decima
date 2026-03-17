@@ -41,10 +41,10 @@ class LogFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
         """Override the format method to apply color formatting based on log levels and truncate logger names if they exceed the specified class length."""
         if len(record.name) > self.class_length:
-            record.name = record.name[-self.class_length :]
+            record.name: str = record.name[-self.class_length :]
 
-        original_msg = record.getMessage()
-        if "[" in original_msg and "]" in original_msg:
+        original_msg: str = record.getMessage()
+        if "[" in original_msg and original_msg.index("[") == 0 and "]" in original_msg:
             record.msg: str = re.sub(r"\[(.*?)\]", f"[{cyan}\\1{reset}]", original_msg)
             record.args = ()
         formats = {
