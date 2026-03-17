@@ -11,6 +11,9 @@ gray: str = "\x1b[37m"
 yellow: str = "\x1b[33m"
 red: str = "\x1b[31m"
 green: str = "\x1b[32m"
+magenta = "\033[35m"
+white = "\033[37m"
+
 bold_red: str = "\x1b[31;1m"
 
 reset: str = "\x1b[0m"
