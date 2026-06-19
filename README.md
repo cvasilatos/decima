@@ -37,6 +37,8 @@ Initialize the logger at the start of your application entry point:
 
 ```python
 import logging
+from typing import cast
+
 from decima import CustomLogger
 
 # Configure logging:
@@ -51,27 +53,26 @@ CustomLogger.setup_logging(
     class_length=20
 )
 
-# Get a logger instance
-logger = logging.getLogger("MyApp")
+# Get a typed logger instance inside your class
+class MyApp:
+    def __init__(self) -> None:
+        self.logger: CustomLogger = cast(
+            "CustomLogger",
+            logging.getLogger(f"{self.__class__.__module__}.{self.__class__.__name__}"),
+        )
 ```
 
 ### 2. Logging Messages
 
-You can now use the standard logging methods, plus the new `trace` method (if using `CustomLogger` explicitly or if the level is registered):
+You can now use the standard logging methods, plus the `trace` method:
 
 ```python
-logger.info("Application started successfully.")
-logger.warning("Configuration file missing, using defaults.")
-logger.error("Failed to connect to database.")
-
-# For Trace level (level 5)
-# Note: Ensure usage complies with the CustomLogger class capabilities
-custom_logger = logging.getLogger("MyApp")
-if isinstance(custom_logger, CustomLogger):
-    custom_logger.trace("Entering complex calculation loop...")
+app = MyApp()
+app.logger.info("Application started successfully.")
+app.logger.warning("Configuration file missing, using defaults.")
+app.logger.error("Failed to connect to database.")
+app.logger.trace("Entering complex calculation loop...")
 ```
-
-To fully utilize the `trace` method with type safety, you might want to ensure your logger is typed as `CustomLogger`.
 
 ## Output Formats
 
